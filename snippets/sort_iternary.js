@@ -11,9 +11,8 @@ Example inputs:
 
 TODO:
   - Don't need to use combined loop, have a loop for each direction
-  - Add tests
 */
-const { debug } = require('../util/util.js')
+const { debug } = require('../util/util')
 
 const START = Symbol('start')
 const END = Symbol('end')
@@ -86,7 +85,4 @@ function printResult(input) {
   process.stdout.write(`Result: ${output}\n\n`)
 }
 
-printResult([['LAX', 'SFO'], ['SFO', 'BEX'], ['BEX', 'SLO']])
-printResult([['LAX', 'SFO'], ['BEX', 'SLO'],  ['SFO', 'BEX']])
-printResult([[1,2], [2,3], [3,4]])
-printResult([[2,3], [1,2], [3,4]])
+module.exports = sortIternary
