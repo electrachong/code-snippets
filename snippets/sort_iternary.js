@@ -16,9 +16,6 @@ TODO:
 
 const { printDebug } = require('../util/util');
 
-const START = Symbol('start');
-const END = Symbol('end');
-
 class Trip {
   constructor(departure, destination) {
     this._departure = departure;
@@ -54,13 +51,21 @@ function getTripMappings(unsortedList) {
 // Find the item where the previous departure was the destination
 function findPreviousTrip(trip, departureByDestination) {
   const [departure, destination] = trip;
-  return new Trip(departureByDestination[departure], departure);
+  const previousDeparture = departureByDestination[departure];
+  if (!previousDeparture) {
+    return undefined;
+  }
+  return new Trip(previousDeparture, departure);
 }
 
 // Find the item where the previous destination is the departure
 function findNextTrip(trip, destinationByDeparture) {
   const [departure, destination] = trip;
-  return new Trip(destination, destinationByDeparture[destination]);
+  const nextDestination = destinationByDeparture[destination];
+  if (!nextDestination) {
+    return undefined;
+  }
+  return new Trip(destination, nextDestination);
 }
 
 // Find the previous trip of the first item in the array, add to the array
@@ -72,7 +77,7 @@ function sortListToStart(sortedList, departureByDestination) {
     const previousTrip = findPreviousTrip(firstItem, departureByDestination);
     printDebug('current sortedList', sortedList)
     printDebug('previousTrip', previousTrip);
-    if (previousTrip.departure === undefined) {
+    if (previousTrip === undefined) {
       foundStart = true
     } else {
       sortedList.unshift(previousTrip.toArray());
@@ -89,7 +94,7 @@ function sortListToEnd(sortedList, destinationByDeparture) {
     const nextTrip = findNextTrip(lastItem, destinationByDeparture);
     printDebug('current sortedList', sortedList)
     printDebug('nextTrip', nextTrip);
-    if (nextTrip.destination === undefined) {
+    if (nextTrip === undefined) {
       foundEnd = true;
     } else {
       sortedList.push(nextTrip.toArray());
