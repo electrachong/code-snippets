@@ -8,9 +8,6 @@ Problem:
 Example inputs:
   [['LAX', 'SFO'], ['SFO', 'BEX'], ['BEX', 'SLO']]
   [1,2], [2,3], [3,4]
-
-TODO:
-  - lint
 */
 
 const { printDebug } = require('../util/util');
@@ -65,11 +62,11 @@ class Trip {
 function getTripMappings(unsortedList) {
   const destinationByDeparture = {};
   const departureByDestination = {};
-  unsortedList.forEach(trip => {
-    const [departure, destination] = trip
+  unsortedList.forEach((trip) => {
+    const [departure, destination] = trip;
     destinationByDeparture[departure] = destination;
     departureByDestination[destination] = departure;
-  })
+  });
   printDebug('destinationByDeparture', destinationByDeparture);
   printDebug('departureByDestination', departureByDestination);
   return [destinationByDeparture, departureByDestination];
@@ -83,7 +80,7 @@ function getTripMappings(unsortedList) {
  * @return {Trip|undefined} the previous trip or undefined if no previous trip
  */
 function findPreviousTrip(trip, departureByDestination) {
-  const [departure, destination] = trip;
+  const [departure, _] = trip; // eslint-disable-line no-unused-vars
   const previousDeparture = departureByDestination[departure];
   if (!previousDeparture) {
     return undefined;
@@ -99,7 +96,7 @@ function findPreviousTrip(trip, departureByDestination) {
  * @return {Trip|undefined} the next trip or undefined if no next trip
  */
 function findNextTrip(trip, destinationByDeparture) {
-  const [departure, destination] = trip;
+  const [_, destination] = trip; // eslint-disable-line no-unused-vars
   const nextDestination = destinationByDeparture[destination];
   if (!nextDestination) {
     return undefined;
@@ -120,10 +117,10 @@ function sortListToStart(sortedList, departureByDestination) {
   while (foundStart === false) {
     const firstItem = sortedList[0];
     const previousTrip = findPreviousTrip(firstItem, departureByDestination);
-    printDebug('current sortedList', sortedList)
+    printDebug('current sortedList', sortedList);
     printDebug('previousTrip', previousTrip);
     if (previousTrip === undefined) {
-      foundStart = true
+      foundStart = true;
     } else {
       sortedList.unshift(previousTrip.toArray());
     }
@@ -141,9 +138,9 @@ function sortListToStart(sortedList, departureByDestination) {
 function sortListToEnd(sortedList, destinationByDeparture) {
   let foundEnd = false;
   while (foundEnd === false) {
-    const lastItem = sortedList[sortedList.length - 1]
+    const lastItem = sortedList[sortedList.length - 1];
     const nextTrip = findNextTrip(lastItem, destinationByDeparture);
-    printDebug('current sortedList', sortedList)
+    printDebug('current sortedList', sortedList);
     printDebug('nextTrip', nextTrip);
     if (nextTrip === undefined) {
       foundEnd = true;
@@ -175,6 +172,7 @@ function sortIternary(unsortedList) {
  * @param {Array.<string[]>} input
  * @return {undefined} - but print the result of calling sortIternary()
  */
+// eslint-disable-next-line no-unused-vars
 function printResult(input) {
   process.stdout.write(`\nFor input ${input}:\n`);
   const output = sortIternary(input);
