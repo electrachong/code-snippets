@@ -1,133 +1,92 @@
-/* example inputs:
-[['LAX', 'SFO'], ['SFO', 'BEX'], ['BEX', 'SLO']]
-[1,2], [2,3], [3,4]
+/*
+Problem:
+  Given an unsorted iternary in the following format:
+    [['SFO', 'BEX'], ['LAX', 'SFO'], ['BEX', 'SLO']]
+  Return a sorted iternary, e.g.
+    [['LAX', 'SFO'], ['SFO', 'BEX'], ['BEX', 'SLO']]
+
+Example inputs:
+  [['LAX', 'SFO'], ['SFO', 'BEX'], ['BEX', 'SLO']]
+  [1,2], [2,3], [3,4]
+
+TODO:
+  - Don't need to use combined loop, have a loop for each direction
+  - Add tests
 */
+const { debug } = require('../util/util.js')
 
-function orderTrip(array) {
-  const destinationByDeparture = {}
-  const departureByDestination = {}
-  array.forEach(trip => {
-    const departure = trip[0]
-    const destination = trip[1]
-    destinationByDeparture[departure] = destination
-    departureByDestination[destination] = departure
+const START = Symbol('start')
+const END = Symbol('end')
+
+function getTripMappings(unsortedList) {
+  const destinationByDeparture = {};
+  const departureByDestination = {};
+  unsortedList.forEach(trip => {
+    const [departure, destination] = trip
+    destinationByDeparture[departure] = destination;
+    departureByDestination[destination] = departure;
   })
-  // console.log('destinationByDeparture', destinationByDeparture)
-  // => destinationByDeparture { LAX: 'SFO', SFO: 'BEX', BEX: 'SLO' }
-  // console.log('departureByDestination', departureByDestination)
-  // => departureByDestination { SFO: 'LAX', BEX: 'SFO', SLO: 'BEX' }
-  const newArray = []
-  newArray.push(array[0]) // ['LAX', 'SFO']
-  const [previousTrip, nextTrip] = findNeighborsForFirstTrip(array[0], destinationByDeparture, departureByDestination)
-  if (previousTrip[0] === undefined) {
-    newArray.unshift('START') // add a marker to indicate we've found the beginning
-  } else {
-    newArray.unshift(previousTrip)
-  }
-  if (nextTrip[1] === undefined) {
-    newArray.push('END') // add a marker to indicate we've found the end
-  } else {
-    newArray.push(nextTrip)
-  }
-  // console.log('newArray', newArray) => newArray [ 'START', [ 'LAX', 'SFO' ], [ 'SFO', 'BEX' ] ]
-
-  /*
-  // __ NOW FOR THE NEXT ITERATION __
-  if (newArray[0] === 'START' && newArray[newArray.length - 1] === 'END') {
-    // we're finished, can exit out of loop
-  }
-  if (newArray[0] === 'START') {
-    // find next trip for last item in new array
-    const newLastTrip = findNextTrip(newArray[newArray.length - 1], destinationByDeparture)
-    newArray.push(newLastTrip)
-  } else {
-    // find the previous trip for the first item in the array
-    const newFirstTrip = findPreviousTrip(newArray[0], departureByDestination)
-    newArray.unshift(newFirstTrip)
-  }
-  // console.log('newArray', newArray) =>  [ 'START', [ 'LAX', 'SFO' ], [ 'SFO', 'BEX' ], [ 'BEX', 'SLO' ] ]
-  */
-
-  // __ REVISED INTO A LOOP __
-  while (!(newArray[0] === 'START' && newArray[newArray.length - 1] === 'END')) {
-    if (newArray[0] === 'START') {
-      // find next trip for last item in new array
-      const newLastTrip = findNextTrip(newArray[newArray.length - 1], destinationByDeparture)
-      if (newLastTrip[1] === undefined) {
-        newArray.push('END') // add a marker to indicate we've found the end
-      } else {
-        newArray.push(newLastTrip)
-      }
-    } else {
-      // find the previous trip for the first item in the array
-      const newFirstTrip = findPreviousTrip(newArray[0], departureByDestination)
-      if (newFirstTrip[0] === undefined) {
-        newArray.unshift('START') // add a marker to indicate we've found the beginning
-      } else {
-        newArray.unshift(newFirstTrip)
-      }
-    }
-  }
-  // console.log('newArray', newArray)
-  // => newArray [ 'START',
-  // [ 'LAX', 'SFO' ],
-  // [ 'SFO', 'BEX' ],
-  // [ 'BEX', 'SLO' ],
-  // 'END' ]
-  return newArray.slice(1, newArray.length - 1) // [ [ 'LAX', 'SFO' ], [ 'SFO', 'BEX' ], [ 'BEX', 'SLO' ] ]
+  debug('destinationByDeparture', destinationByDeparture)
+  debug('departureByDestination', departureByDestination)
+  return [destinationByDeparture, departureByDestination];
 }
 
+// Find the item where the previous departure was the destination
 function findPreviousTrip(trip, departureByDestination) {
-  // find the item where the previous departure was the destination
-  const departure = trip[0]
-  const destination = trip[1]
-  return [departureByDestination[departure], departure] // departure, destination
+  const [departure, destination] = trip
+  return [departureByDestination[departure], departure]
 }
 
+// Find the item where the previous destination is the departure
 function findNextTrip(trip, destinationByDeparture) {
-  // find the item where the previous destination (SFO) is the departure
-  const departure = trip[0]
-  const destination = trip[1]
+  const [departure, destination] = trip
   return [destination, destinationByDeparture[destination]]
 }
 
-function findNeighborsForFirstTrip(trip, destinationByDeparture, departureByDestination) {
-  const departure = trip[0]
-  const destination = trip[1]
-  // console.log('departure', departure) => LAX
-  // console.log('destination', destination) => SFO
+function sortIternary(unsortedList) {
+  const [destinationByDeparture, departureByDestination] = getTripMappings(unsortedList);
+  const sortedList = [];
+  sortedList.push(unsortedList[0]);
 
-  // find the item where the previous destination (SFO) is the departure
-  // TODO: replace with findNextTrip
-  const nextTrip = [destination, destinationByDeparture[destination]]
-  // console.log('nextTrip', nextTrip) => nextTrip [ 'SFO', 'BEX' ]
+  let firstItem = sortedList[0];
+  let lastItem = sortedList[sortedList.length - 1]
 
-  // find the item where the previous departure (LAX) was the destination
-  // TODO: replace with findPreviousTrip
-  const previousTrip = [departureByDestination[departure], departure]
-  // console.log('previousTrip', previousTrip) => previousTrip [ undefined, 'LAX' ]
-
-  return [previousTrip, nextTrip]
+  // Check if we have found the terminal trip on either end, and if not,
+  // use the existing first or last item to find the next or previous trip
+  while (!(firstItem === START && lastItem === END)) {
+    debug('current sortedList', sortedList)
+    if (firstItem !== START) {
+      const previousTrip = findPreviousTrip(sortedList[0], departureByDestination)
+      debug('previousTrip', previousTrip)
+      if (previousTrip[0] === undefined) {
+        // add start marker to indicate we've found the beginning
+        sortedList.unshift(START)
+      } else {
+        sortedList.unshift(previousTrip)
+      }
+    } else {
+      const nextTrip = findNextTrip(sortedList[sortedList.length - 1], destinationByDeparture)
+      debug('nextTrip', nextTrip)
+      if (nextTrip[1] === undefined) {
+        // add end marker to indicate we've found the end
+        sortedList.push(END)
+      } else {
+        sortedList.push(nextTrip)
+      }
+    }
+    firstItem = sortedList[0];
+    lastItem = sortedList[sortedList.length - 1]
+  }
+  return sortedList.slice(1, sortedList.length - 1)
 }
 
-console.log(orderTrip([['LAX', 'SFO'], ['SFO', 'BEX'], ['BEX', 'SLO']]))
-console.log(orderTrip([['LAX', 'SFO'], ['BEX', 'SLO'],  ['SFO', 'BEX']]))
-console.log(orderTrip([[1,2], [2,3], [3,4]]))
-console.log(orderTrip([[2,3], [1,2], [3,4]]))
-
-/* (leftover notes from drafting)
-// take the first pair from the hash and push it into the array
-
-const firstTrip = [firstDeparture, firstDestination]
-newArray.push(firstTrip) // [LAX, SFO] <-- departure, destination
-
-// if it doesn't exist, that was the last element
-if (nextTrip == undefined) {
-  // do nothing? may want to set a marker
+function printResult(input) {
+  process.stdout.write(`\nFor input ${input}:\n`)
+  const output = sortIternary(input)
+  process.stdout.write(`Result: ${output}\n\n`)
 }
-// find the item where the previous departure (LAX) was the destination
-const previousTrip = destinationByDeparture[firstDeparture]
 
-// we can also figure out the starting and ending elements
-// by counting the number of times we see their members
-*/
+printResult([['LAX', 'SFO'], ['SFO', 'BEX'], ['BEX', 'SLO']])
+printResult([['LAX', 'SFO'], ['BEX', 'SLO'],  ['SFO', 'BEX']])
+printResult([[1,2], [2,3], [3,4]])
+printResult([[2,3], [1,2], [3,4]])
