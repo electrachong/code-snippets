@@ -10,31 +10,58 @@ Example inputs:
   [1,2], [2,3], [3,4]
 
 TODO:
-  - Improve semantics
-  - Lint and js docs
+  - lint
 */
 
 const { printDebug } = require('../util/util');
 
+/**
+ * Class representing a trip.
+ * May not be strictly necessary yet since we don't utilize the getters so far.
+ */
 class Trip {
+  /**
+   * Create a trip.
+   * @constructor
+   * @param {string} departure - Point of departure
+   * @param {string} destination - Arrival or destination
+   */
   constructor(departure, destination) {
     this._departure = departure;
     this._destination = destination;
   }
 
+  /**
+   * Get the departure.
+   * @return {string} The departure.
+   */
   get departure() {
     return this._departure;
   }
 
+  /**
+   * Get the destination.
+   * @return {string} The destination.
+   */
   get destination() {
     return this._destination;
   }
 
+  /**
+   * Convert a trip into an array of two items representing the trip.
+   * @return {string[]} [departure, destination]
+   */
   toArray() {
     return [this._departure, this._destination];
   }
 }
 
+/**
+ * Iterate over an unsorted array of trips and return mappings of
+ * destinations by departures and departures by destinations.
+ * @param {Array.<string[]>} unsortedList - unsorted array of trip arrays
+ * @return {object[]} [destinationByDeparture, departureByDestination]
+ */
 function getTripMappings(unsortedList) {
   const destinationByDeparture = {};
   const departureByDestination = {};
@@ -48,7 +75,13 @@ function getTripMappings(unsortedList) {
   return [destinationByDeparture, departureByDestination];
 }
 
-// Find the item where the previous departure was the destination
+/**
+ * Find the trip where the current trip's departure was the destination
+ * @param {string[]} trip - two-item array of strings representing a trip
+ * @param {object} departureByDestination - a mapping of destination keys to
+ *  departures
+ * @return {Trip|undefined} the previous trip or undefined if no previous trip
+ */
 function findPreviousTrip(trip, departureByDestination) {
   const [departure, destination] = trip;
   const previousDeparture = departureByDestination[departure];
@@ -58,7 +91,13 @@ function findPreviousTrip(trip, departureByDestination) {
   return new Trip(previousDeparture, departure);
 }
 
-// Find the item where the previous destination is the departure
+/**
+ * Find the trip where the current trip's destination is the departure
+ * @param {string[]} trip - two-item array of strings representing a trip
+ * @param {object} destinationByDeparture - a mapping of departure keys to
+ *  destinations
+ * @return {Trip|undefined} the next trip or undefined if no next trip
+ */
 function findNextTrip(trip, destinationByDeparture) {
   const [departure, destination] = trip;
   const nextDestination = destinationByDeparture[destination];
@@ -68,8 +107,14 @@ function findNextTrip(trip, destinationByDeparture) {
   return new Trip(destination, nextDestination);
 }
 
-// Find the previous trip of the first item in the array, add to the array
-// and repeat until we have encountered the first trip.
+/**
+ * Find the previous trip of the first item in the current array, add to the
+ * array and repeat until we have encountered the first trip.
+ * @param {Array.<string[]>} sortedList - array containing trips sorted in order
+ * @param {object} departureByDestination - a mapping of destination keys to
+ *  departures
+ * @return {undefined} - MUTATES sortedList by adding arrays representing trips
+ */
 function sortListToStart(sortedList, departureByDestination) {
   let foundStart = false;
   while (foundStart === false) {
@@ -85,8 +130,14 @@ function sortListToStart(sortedList, departureByDestination) {
   }
 }
 
-// Find the next trip of the last item in the array, add to the array
-// and repeat until we have encountered the last trip.
+/**
+ * Find the next trip of the last item in the current array, add to the
+ * array and repeat until we have encountered the last trip.
+ * @param {Array.<string[]>} sortedList - array containing trips sorted in order
+ * @param {object} destinationByDeparture - a mapping of departure keys to
+ *  destinations
+ * @return {undefined} - MUTATES sortedList by adding arrays representing trips
+ */
 function sortListToEnd(sortedList, destinationByDeparture) {
   let foundEnd = false;
   while (foundEnd === false) {
@@ -102,6 +153,12 @@ function sortListToEnd(sortedList, destinationByDeparture) {
   }
 }
 
+/**
+ * Given an array of string arrays representing trips which may be out of order,
+ * return an array of string arrays with the trips sorted in order.
+ * @param {Array.<string[]>} unsortedList - array containing unsorted trips
+ * @return {Array.<string[]>} sortedList - array containg sorted trips
+ */
 function sortIternary(unsortedList) {
   const [destinationByDeparture, departureByDestination] = getTripMappings(unsortedList);
   const sortedList = [];
@@ -110,9 +167,14 @@ function sortIternary(unsortedList) {
   sortListToStart(sortedList, departureByDestination);
   sortListToEnd(sortedList, destinationByDeparture);
 
-  return sortedList
+  return sortedList;
 }
 
+/**
+ * Print given input and result of calling sortIternary() on the input.
+ * @param {Array.<string[]>} input
+ * @return {undefined} - but print the result of calling sortIternary()
+ */
 function printResult(input) {
   process.stdout.write(`\nFor input ${input}:\n`);
   const output = sortIternary(input);
