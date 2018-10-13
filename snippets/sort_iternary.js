@@ -10,12 +10,13 @@ Example inputs:
   [1,2], [2,3], [3,4]
 
 TODO:
-  - Don't need to use combined loop, have a loop for each direction
+  - More syntactic sugar
 */
-const { debug } = require('../util/util')
 
-const START = Symbol('start')
-const END = Symbol('end')
+const { printDebug } = require('../util/util');
+
+const START = Symbol('start');
+const END = Symbol('end');
 
 function getTripMappings(unsortedList) {
   const destinationByDeparture = {};
@@ -25,21 +26,21 @@ function getTripMappings(unsortedList) {
     destinationByDeparture[departure] = destination;
     departureByDestination[destination] = departure;
   })
-  debug('destinationByDeparture', destinationByDeparture)
-  debug('departureByDestination', departureByDestination)
+  printDebug('destinationByDeparture', destinationByDeparture);
+  printDebug('departureByDestination', departureByDestination);
   return [destinationByDeparture, departureByDestination];
 }
 
 // Find the item where the previous departure was the destination
 function findPreviousTrip(trip, departureByDestination) {
-  const [departure, destination] = trip
-  return [departureByDestination[departure], departure]
+  const [departure, destination] = trip;
+  return [departureByDestination[departure], departure];
 }
 
 // Find the item where the previous destination is the departure
 function findNextTrip(trip, destinationByDeparture) {
-  const [departure, destination] = trip
-  return [destination, destinationByDeparture[destination]]
+  const [departure, destination] = trip;
+  return [destination, destinationByDeparture[destination]];
 }
 
 function sortIternary(unsortedList) {
@@ -47,42 +48,43 @@ function sortIternary(unsortedList) {
   const sortedList = [];
   sortedList.push(unsortedList[0]);
 
-  let firstItem = sortedList[0];
-  let lastItem = sortedList[sortedList.length - 1]
-
-  // Check if we have found the terminal trip on either end, and if not,
-  // use the existing first or last item to find the next or previous trip
-  while (!(firstItem === START && lastItem === END)) {
-    debug('current sortedList', sortedList)
-    if (firstItem !== START) {
-      const previousTrip = findPreviousTrip(sortedList[0], departureByDestination)
-      debug('previousTrip', previousTrip)
-      if (previousTrip[0] === undefined) {
-        // add start marker to indicate we've found the beginning
-        sortedList.unshift(START)
-      } else {
-        sortedList.unshift(previousTrip)
-      }
+  // Find the previous trip of the first item in the array, add to the array
+  // and repeat until we have encountered the first trip.
+  for (let firstItem = sortedList[0]; firstItem !== START; firstItem = sortedList[0]) {
+    const previousTrip = findPreviousTrip(firstItem, departureByDestination);
+    printDebug('previousTrip', previousTrip);
+    if (previousTrip[0] === undefined) {
+      // add start marker to indicate we've found the beginning
+      sortedList.unshift(START);
     } else {
-      const nextTrip = findNextTrip(sortedList[sortedList.length - 1], destinationByDeparture)
-      debug('nextTrip', nextTrip)
-      if (nextTrip[1] === undefined) {
-        // add end marker to indicate we've found the end
-        sortedList.push(END)
-      } else {
-        sortedList.push(nextTrip)
-      }
+      sortedList.unshift(previousTrip);
     }
-    firstItem = sortedList[0];
-    lastItem = sortedList[sortedList.length - 1]
   }
-  return sortedList.slice(1, sortedList.length - 1)
+
+  // Find the next trip of the last item in the array, add to the array
+  // and repeat until we have encountered the last trip.
+  for (
+    let lastItem = sortedList[sortedList.length - 1];
+    lastItem !== END;
+    lastItem = sortedList[sortedList.length - 1]
+  ) {
+    const nextTrip = findNextTrip(lastItem, destinationByDeparture);
+    printDebug('nextTrip', nextTrip);
+    if (nextTrip[1] === undefined) {
+      // add end marker to indicate we've found the end
+      sortedList.push(END);
+    } else {
+      sortedList.push(nextTrip);
+    }
+  }
+
+  return sortedList.slice(1, sortedList.length - 1);
 }
 
 function printResult(input) {
-  process.stdout.write(`\nFor input ${input}:\n`)
-  const output = sortIternary(input)
-  process.stdout.write(`Result: ${output}\n\n`)
+  process.stdout.write(`\nFor input ${input}:\n`);
+  const output = sortIternary(input);
+  process.stdout.write(`Result: ${output}\n\n`);
 }
 
-module.exports = sortIternary
+module.exports = sortIternary;

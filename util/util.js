@@ -1,6 +1,6 @@
 const DEBUG = (process.env['DEBUG'] === 'true')
 
-function debug(msg, value) {
+function printDebug(msg, value) {
   if (!DEBUG)
     return;
   console.log('========== DEBUG ==========');
@@ -8,5 +8,5 @@ function debug(msg, value) {
 }
 
 module.exports = {
-  debug,
+  printDebug,
 };
