@@ -10,7 +10,8 @@ Example inputs:
   [1,2], [2,3], [3,4]
 
 TODO:
-  - Probably don't need to push markers to array
+  - Improve semantics
+  - Lint and js docs
 */
 
 const { printDebug } = require('../util/util');
@@ -65,12 +66,14 @@ function findNextTrip(trip, destinationByDeparture) {
 // Find the previous trip of the first item in the array, add to the array
 // and repeat until we have encountered the first trip.
 function sortListToStart(sortedList, departureByDestination) {
-  for (let firstItem = sortedList[0]; firstItem !== START; firstItem = sortedList[0]) {
+  let foundStart = false;
+  while (foundStart === false) {
+    const firstItem = sortedList[0];
     const previousTrip = findPreviousTrip(firstItem, departureByDestination);
+    printDebug('current sortedList', sortedList)
     printDebug('previousTrip', previousTrip);
     if (previousTrip.departure === undefined) {
-      // add start marker to indicate we've found the beginning
-      sortedList.unshift(START);
+      foundStart = true
     } else {
       sortedList.unshift(previousTrip.toArray());
     }
@@ -80,16 +83,14 @@ function sortListToStart(sortedList, departureByDestination) {
 // Find the next trip of the last item in the array, add to the array
 // and repeat until we have encountered the last trip.
 function sortListToEnd(sortedList, destinationByDeparture) {
-  for (
-    let lastItem = sortedList[sortedList.length - 1];
-    lastItem !== END;
-    lastItem = sortedList[sortedList.length - 1]
-  ) {
+  let foundEnd = false;
+  while (foundEnd === false) {
+    const lastItem = sortedList[sortedList.length - 1]
     const nextTrip = findNextTrip(lastItem, destinationByDeparture);
+    printDebug('current sortedList', sortedList)
     printDebug('nextTrip', nextTrip);
     if (nextTrip.destination === undefined) {
-      // add end marker to indicate we've found the end
-      sortedList.push(END);
+      foundEnd = true;
     } else {
       sortedList.push(nextTrip.toArray());
     }
@@ -104,7 +105,7 @@ function sortIternary(unsortedList) {
   sortListToStart(sortedList, departureByDestination);
   sortListToEnd(sortedList, destinationByDeparture);
 
-  return sortedList.slice(1, sortedList.length - 1);
+  return sortedList
 }
 
 function printResult(input) {
