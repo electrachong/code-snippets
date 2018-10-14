@@ -73,19 +73,25 @@ function getTripMappings(unsortedList) {
 }
 
 /**
- * Find the trip where the current trip's departure was the destination
- * @param {string[]} trip - two-item array of strings representing a trip
+ * Return the first trip, by searching for a departure that is not repeated
+ * in the list of trips as a destination.
+ * @param {object} destinationByDeparture - a mapping of departure keys to
+ *  destinations
  * @param {object} departureByDestination - a mapping of destination keys to
  *  departures
- * @return {Trip|undefined} the previous trip or undefined if no previous trip
+ * @return {string[]} the first trip as represented by an array
  */
-function findPreviousTrip(trip, departureByDestination) {
-  const [departure, _] = trip; // eslint-disable-line no-unused-vars
-  const previousDeparture = departureByDestination[departure];
-  if (!previousDeparture) {
-    return undefined;
+function findFirstTrip(destinationByDeparture, departureByDestination) {
+  const departures = Object.keys(destinationByDeparture);
+  let firstTripDeparture = departures.find(departure =>
+    // eslint-disable-next-line implicit-arrow-linebreak
+    departureByDestination[departure] === undefined);
+  const firstTripDestination = destinationByDeparture[firstTripDeparture];
+  // if input value originally array of numbers, return value as number
+  if (typeof firstTripDestination === 'number') {
+    firstTripDeparture = parseInt(firstTripDeparture, 10);
   }
-  return new Trip(previousDeparture, departure);
+  return [firstTripDeparture, firstTripDestination];
 }
 
 /**
@@ -102,29 +108,6 @@ function findNextTrip(trip, destinationByDeparture) {
     return undefined;
   }
   return new Trip(destination, nextDestination);
-}
-
-/**
- * Find the previous trip of the first item in the current array, add to the
- * array and repeat until we have encountered the first trip.
- * @param {Array.<string[]>} sortedList - array containing trips sorted in order
- * @param {object} departureByDestination - a mapping of destination keys to
- *  departures
- * @return {undefined} - MUTATES sortedList by adding arrays representing trips
- */
-function sortListToStart(sortedList, departureByDestination) {
-  let foundStart = false;
-  while (foundStart === false) {
-    const firstItem = sortedList[0];
-    const previousTrip = findPreviousTrip(firstItem, departureByDestination);
-    printDebug('current sortedList', sortedList);
-    printDebug('previousTrip', previousTrip);
-    if (previousTrip === undefined) {
-      foundStart = true;
-    } else {
-      sortedList.unshift(previousTrip.toArray());
-    }
-  }
 }
 
 /**
@@ -158,10 +141,9 @@ function sortListToEnd(sortedList, destinationByDeparture) {
  */
 function sortIternary(unsortedList) {
   const [destinationByDeparture, departureByDestination] = getTripMappings(unsortedList);
+  const firstTrip = findFirstTrip(destinationByDeparture, departureByDestination);
   const sortedList = [];
-  sortedList.push(unsortedList[0]);
-
-  sortListToStart(sortedList, departureByDestination);
+  sortedList.push(firstTrip);
   sortListToEnd(sortedList, destinationByDeparture);
 
   return sortedList;
@@ -179,4 +161,4 @@ function printResult(input) {
   process.stdout.write(`Result: ${output}\n\n`);
 }
 
-module.exports = sortIternary;
+module.exports = { sortIternary, findFirstTrip, getTripMappings };
