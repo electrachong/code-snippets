@@ -1,0 +1,32 @@
+{
+  "name": "code-snippets",
+  "version": "1.0.0",
+  "description": "Collection of random code snippets.",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha",
+    "lint": "eslint snippets/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/electrachong/code-snippets.git"
+  },
+  "author": "Electra Chong",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/electrachong/code-snippets/issues"
+  },
+  "homepage": "https://github.com/electrachong/code-snippets#readme",
+  "devDependencies": {
+    "eslint": "^5.7.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.14.0",
+    "mocha": "^5.2.0"
+  },
+  "eslintConfig": {
+    "extends": "airbnb-base",
+    "rules": {
+      "no-underscore-dangle": 0
+    }
+  }
+}
